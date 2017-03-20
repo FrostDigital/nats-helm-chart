@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nats
+  namespace: {{ .Values.service.namespace }}  
+spec:
+  type: ClusterIP
+  ports:
+  - port: 4222
+    targetPort: 4222
+    protocol: TCP
+    name: server
+  - port: 6222
+    targetPort: 6222
+    protocol: TCP
+    name: route
+  - port: 8222
+    targetPort: 8222
+    protocol: TCP
+    name: monitor
+  selector:
+    app: {{ template "fullname" . }}
