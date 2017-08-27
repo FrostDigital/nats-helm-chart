@@ -1,7 +1,6 @@
 # NATS Helm chart
 
-A Helm chart of Apcera NATS message bus.
-
+A Helm chart for deploying [NATS message bus](https://nats.io/) on a Kubernetes cluster.
 
 ## Usage
 
