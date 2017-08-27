@@ -6,16 +6,16 @@ image:
   tag: 0.7.2
   pullPolicy: IfNotPresent
 service:
-  namespace: agada
-  name: nats
-  type: ClusterIP
+  #namespace: nats
+  #name: test-nats
+  #type: ClusterIP
   externalPort: 4222
   internalPort: 4222
 resources:
   limits:
     cpu: 200m
-    memory: 256Mi
+    memory: 128Mi
   requests:
     cpu: 200m
-    memory: 256Mi
+    memory: 128Mi
 
