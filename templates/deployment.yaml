@@ -1,21 +1,25 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  name: {{ template "fullname" . }}
-  namespace: {{ .Values.service.namespace }}
+  name: {{ .Chart.Name }}
   labels:
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    component: {{ .Chart.Name }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.replicas }}  
   template:
     metadata:
       labels:
-        app: {{ template "fullname" . }}
+        component: {{ .Chart.Name }}      
+        app: {{ template "name" . }}
     spec:
       containers:
-      - name: {{ .Chart.Name }}
+      - name: nats
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        #env:
+        #- name: EXTRA
+        #  value: -DV
         ports:
         - name: server
           containerPort: 4222
@@ -23,4 +27,16 @@ spec:
           containerPort: 6222
         - name: monitor
           containerPort: 8222
-        
+        livenessProbe:
+          exec:
+            command:
+            - /route_checker
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          tcpSocket:
+            port: 8222
+          initialDelaySeconds: 10
+          timeoutSeconds: 5
+        resources:
+{{ toYaml .Values.resources | indent 10 }}

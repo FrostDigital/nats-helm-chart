@@ -2,19 +2,14 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 image:
-  repository: nats
-  tag: 0.7.2
-  pullPolicy: IfNotPresent
-service:
-  #namespace: nats
-  #name: test-nats
-  #type: ClusterIP
-  externalPort: 4222
-  internalPort: 4222
+  repository: quay.io/pires/docker-nats
+  tag: 0.9.6_1
+  pullPolicy: Always        
+replicas: 3
 resources:
   limits:
     cpu: 200m
-    memory: 128Mi
+    memory: 256Mi
   requests:
     cpu: 200m
     memory: 128Mi
