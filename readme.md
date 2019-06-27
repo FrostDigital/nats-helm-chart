@@ -26,3 +26,10 @@ helm install https://github.com/FrostDigital/nats-helm-chart/archive/master.tar.
 
 This chart is based on https://github.com/pires/kubernetes-nats-cluster by [Pires](https://github.com/pires).
 
+
+## Changelog
+
+0.2.0 - Exposes more configuration options with config maps
+
+0.1.0 - Initial version.
+
