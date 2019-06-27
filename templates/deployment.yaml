@@ -1,42 +1,71 @@
-apiVersion: extensions/v1beta1
-kind: Deployment
+apiVersion: v1
+kind: Service
 metadata:
   name: {{ .Chart.Name }}
   labels:
-    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
     component: {{ .Chart.Name }}
 spec:
-  replicas: {{ .Values.replicas }}  
+  selector:
+    component: {{ .Chart.Name }}
+  clusterIP: None
+  ports:
+  - name: client
+    port: 4222
+  - name: cluster
+    port: 6222
+  - name: monitor
+    port: 8222
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: {{ .Chart.Name }}
+  labels:
+    component: {{ .Chart.Name }}
+spec:
+  serviceName: {{ .Chart.Name }}
+  replicas: {{ .Values.replicas }}
   template:
     metadata:
       labels:
-        component: {{ .Chart.Name }}      
-        app: {{ template "name" . }}
+        component: {{ .Chart.Name }}
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: component
+                  operator: In
+                  values:
+                    - nats
+            topologyKey: kubernetes.io/hostname
       containers:
       - name: nats
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        #env:
-        #- name: EXTRA
-        #  value: -DV
+        args: [ "--config", "/etc/nats/config/nats.conf"]
+        volumeMounts:
+          - name: tls-volume
+            mountPath: /etc/nats/tls
+          - name: config-volume
+            mountPath: /etc/nats/config
         ports:
-        - name: server
-          containerPort: 4222
-        - name: route
-          containerPort: 6222
-        - name: monitor
-          containerPort: 8222
+        - containerPort: 4222
+          name: client
+        - containerPort: 6222
+          name: cluster
+        - containerPort: 8222
+          name: monitor
         livenessProbe:
-          exec:
-            command:
-            - /route_checker
-          initialDelaySeconds: 10
-          timeoutSeconds: 5
-        readinessProbe:
-          tcpSocket:
+          httpGet:
+            path: /
             port: 8222
           initialDelaySeconds: 10
           timeoutSeconds: 5
-        resources:
-{{ toYaml .Values.resources | indent 10 }}
+      volumes:
+      - name: tls-volume
+        secret:
+          secretName: tls-nats-server
+      - name: config-volume
+        configMap:
+          name: nats-config
